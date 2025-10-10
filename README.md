@@ -194,14 +194,95 @@ La IA utiliza la API de Gemini con **prompts especializados** según el nivel de
 - **Código modular y fácilmente extensible**
 - **TypeScript completo para type safety**
 
-## 🚧 Próximas Mejoras Planificadas
+## 🤝 Cómo Contribuir
 
-- Sistema de guardado/carga de partidas
-- Historial de movimientos con notación algebraica estándar
-- Modo de análisis de posiciones con explicaciones
-- Sistema de pistas y entrenamiento
-- Soporte para variantes de ajedrez (Fischer Random, etc.)
-- Modo multijugador en línea
+¡Gracias por tu interés en contribuir al proyecto! Este es un proyecto open source y todas las contribuciones son bienvenidas. Sigue estos pasos para contribuir:
+
+### 📋 Pasos para Contribuir
+
+1. **Haz un Fork** del repositorio
+2. **Crea una rama** para tu feature (`git checkout -b feature/AmazingFeature`)
+3. **Haz tus cambios** y asegúrate de que pasen los tests
+4. **Haz commit** de tus cambios (`git commit -m 'Add some AmazingFeature'`)
+5. **Haz push** de la rama (`git push origin feature/AmazingFeature`)
+6. **Abre un Pull Request**
+
+### 📝 Directrices para Contribuir
+
+- **Mantén la calidad del código**: Sigue las mejores prácticas de TypeScript y React
+- **Añade tests**: Para nuevas funcionalidades, incluye tests apropiados
+- **Documenta los cambios**: Actualiza el README si es necesario
+- **Sigue las convenciones**: Usa nombres descriptivos para variables y funciones
+- **Respeta la arquitectura**: Mantén la separación clara entre lógica de negocio y UI
+
+### 🐛 Reportar Bugs
+
+Si encuentras un bug, por favor crea un [issue](https://github.com/Nahuel-83/Rechess/issues) con:
+
+1. **Descripción clara** del problema
+2. **Pasos para reproducirlo**
+3. **Comportamiento esperado** vs **actual**
+4. **Capturas de pantalla** si es relevante
+5. **Versión del navegador** y sistema operativo
+
+### 💡 Sugerir Mejoras
+
+Para sugerir nuevas funcionalidades o mejoras:
+
+1. Crea un [issue](https://github.com/Nahuel-83/Rechess/issues) con el label `enhancement`
+2. Describe la funcionalidad propuesta
+3. Explica por qué sería útil
+4. Si es posible, incluye ejemplos de uso
+
+### 🔧 Configuración para Desarrollo
+
+```bash
+# Clona tu fork
+git clone https://github.com/TU-USUARIO/Rechess.git
+cd Rechess
+
+# Instala dependencias
+npm install
+
+# Crea archivo .env con tus configuraciones
+cp .env.example .env
+
+# Ejecuta en modo desarrollo
+npm run dev
+
+# Ejecuta tests
+npm run test
+
+# Construye para producción
+npm run build
+```
+
+### 📋 Tipos de Contribuciones Aceptadas
+
+- ✅ Corrección de bugs
+- ✅ Nuevas funcionalidades
+- ✅ Mejoras de rendimiento
+- ✅ Mejoras de accesibilidad
+- ✅ Actualizaciones de documentación
+- ✅ Tests adicionales
+- ✅ Refactoring de código
+
+### 🚫 No Aceptamos
+
+- Cambios que rompan funcionalidades existentes sin justificación
+- Código que no siga las convenciones del proyecto
+- Cambios que afecten la seguridad o privacidad
+
+### 📞 Contacto
+
+Si tienes dudas sobre cómo contribuir, puedes:
+
+- Crear un [issue](https://github.com/Nahuel-83/Rechess/issues) con preguntas
+- Contactar al maintainer directamente
+
+---
+
+¡Tu contribución hace que este proyecto sea mejor para toda la comunidad! 🚀
 
 ---
 
