@@ -42,12 +42,12 @@ export function cloneBoard(board: (Piece | null)[][]): (Piece | null)[][] {
 
 /**
  * Crea una copia profunda del estado del juego
+ * Nota: No clona moveHistory para optimizar rendimiento
  */
 export function cloneGameState(gameState: GameState): GameState {
   return {
     ...gameState,
     board: cloneBoard(gameState.board),
-    moveHistory: [...gameState.moveHistory],
     castlingRights: { ...gameState.castlingRights }
   };
 }

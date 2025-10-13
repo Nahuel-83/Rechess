@@ -9,9 +9,25 @@ import { analyzeGameState } from './move-validator';
  */
 export class ChessGameManager {
   private gameState: GameState;
+  private maxMoveHistory: number = 50; // Limitar historial a últimos 50 movimientos
 
   constructor(initialState?: GameState) {
     this.gameState = initialState || cloneGameState(INITIAL_GAME_STATE);
+  }
+
+  /**
+   * Configura el límite máximo del historial de movimientos
+   */
+  setMaxMoveHistory(maxMoves: number): void {
+    this.maxMoveHistory = Math.max(10, maxMoves); // Mínimo 10 movimientos
+    this.cleanMoveHistory(); // Limpiar inmediatamente si es necesario
+  }
+
+  /**
+   * Obtiene el límite máximo del historial de movimientos
+   */
+  getMaxMoveHistory(): number {
+    return this.maxMoveHistory;
   }
 
   /**
@@ -19,6 +35,30 @@ export class ChessGameManager {
    */
   getGameState(): GameState {
     return this.gameState;
+  }
+
+  /**
+   * Obtiene estadísticas de rendimiento del historial
+   */
+  getHistoryStats(): { currentLength: number; maxLength: number; memoryUsage: string } {
+    const currentLength = this.gameState.moveHistory.length;
+    const maxLength = this.maxMoveHistory;
+    const memoryUsage = `~${Math.round(currentLength * 50 / 1024)}KB`; // Estimación aproximada
+
+    return {
+      currentLength,
+      maxLength,
+      memoryUsage
+    };
+  }
+
+  /**
+   * Limpia el historial de movimientos manteniendo solo los últimos N movimientos
+   */
+  private cleanMoveHistory(): void {
+    if (this.gameState.moveHistory.length > this.maxMoveHistory) {
+      this.gameState.moveHistory = this.gameState.moveHistory.slice(-this.maxMoveHistory);
+    }
   }
 
   /**
@@ -59,6 +99,9 @@ export class ChessGameManager {
       lastMove.promotionPiece = promotionPieceType;
     }
 
+    // Limpiar historial para mantener rendimiento
+    this.cleanMoveHistory();
+
     // Cambiar turno
     newGameState.currentPlayer = newGameState.currentPlayer === 'white' ? 'black' : 'white';
 
@@ -69,7 +112,7 @@ export class ChessGameManager {
   /**
    * Verifica si un movimiento es un enroque
    */
-  isCastlingMove(piece: Piece, from: Position, to: Position, gameState: GameState): boolean {
+  isCastlingMove(piece: Piece, from: Position, to: Position): boolean {
     // Solo el rey puede hacer enroque
     if (piece.type !== 'king') return false;
 
@@ -151,7 +194,7 @@ export class ChessGameManager {
     const newGameState = cloneGameState(this.gameState);
 
     // Verificar si es un movimiento de enroque
-    const isCastling = this.isCastlingMove(piece, from, to, newGameState);
+    const isCastling = this.isCastlingMove(piece, from, to);
 
     if (isCastling) {
       // Realizar enroque: mover rey y torre
@@ -219,6 +262,9 @@ export class ChessGameManager {
       capturedPiece,
       isCastling: isCastling
     });
+
+    // Limpiar historial para mantener rendimiento
+    this.cleanMoveHistory();
 
     // Actualizar derechos de enroque después del movimiento
     const updatedRights = this.updateCastlingRights(gameState, from, piece);

@@ -1,5 +1,4 @@
 import type { GameState } from '../types/chess';
-import { DIFFICULTY_LEVELS } from '../types/chess';
 import { loadConfig, validateConfig } from '../config/app-config';
 import { GeminiService } from '../services/gemini-service';
 import { getValidMoves } from '../game/game-logic';
@@ -255,9 +254,16 @@ export class ChessAI {
   }
 
   /**
-   * Obtiene la configuración actual de dificultad
+   * Obtiene información del modelo de IA actual
    */
-  getDifficulty(): string {
-    return this.difficulty;
+  getModelInfo(): string {
+    return this.geminiService.getPerformanceStats().model;
+  }
+
+  /**
+   * Obtiene estadísticas de rendimiento de la IA
+   */
+  getPerformanceStats(): { model: string; avgResponseTime: string; difficulty: string } {
+    return this.geminiService.getPerformanceStats();
   }
 }

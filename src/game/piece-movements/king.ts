@@ -90,22 +90,6 @@ function canCastle(board: (Piece | null)[][], kingPos: Position, color: Color, s
  * Verifica si una posición está siendo atacada por el color contrario
  */
 function isPositionAttacked(board: (Piece | null)[][], pos: Position, byColor: Color): boolean {
-  // Crear un GameState temporal para obtener movimientos posibles
-  const tempGameState: GameState = {
-    board: board,
-    currentPlayer: byColor,
-    moveHistory: [],
-    isInCheck: false,
-    isCheckmate: false,
-    isStalemate: false,
-    castlingRights: {
-      whiteKingSide: false,
-      whiteQueenSide: false,
-      blackKingSide: false,
-      blackQueenSide: false
-    }
-  };
-
   // Verificar si alguna pieza del color contrario puede atacar esta posición
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
@@ -134,7 +118,8 @@ function isPositionAttacked(board: (Piece | null)[][], pos: Position, byColor: C
             moves = getKnightMoves(tempBoard, { row, col }, piece.color);
             break;
           case 'king':
-            moves = getKingMoves(tempBoard, { row, col }, piece.color, tempGameState);
+            // Para el rey, calcular movimientos básicos directamente sin enroque
+            moves = getBasicKingMoves(tempBoard, { row, col }, piece.color);
             break;
         }
 
@@ -145,6 +130,33 @@ function isPositionAttacked(board: (Piece | null)[][], pos: Position, byColor: C
     }
   }
   return false;
+}
+
+/**
+ * Obtiene movimientos básicos del rey (sin enroque) para evitar recursión
+ */
+function getBasicKingMoves(board: (Piece | null)[][], pos: Position, color: Color): Position[] {
+  const moves: Position[] = [];
+  const directions = [
+    { row: -1, col: -1 }, { row: -1, col: 0 }, { row: -1, col: 1 },
+    { row: 0, col: -1 },                       { row: 0, col: 1 },
+    { row: 1, col: -1 },  { row: 1, col: 0 },  { row: 1, col: 1 }
+  ];
+
+  for (const direction of directions) {
+    const newPos = { row: pos.row + direction.row, col: pos.col + direction.col };
+
+    if (isValidPosition(newPos)) {
+      const pieceAt = getPieceAt(board, newPos);
+
+      // Puede moverse a casillas vacías o capturar piezas enemigas
+      if (!pieceAt || isOpponentPiece(board, newPos, color)) {
+        moves.push({ ...newPos });
+      }
+    }
+  }
+
+  return moves;
 }
 
 // Necesitamos importar estas funciones para la detección de ataques

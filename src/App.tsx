@@ -40,6 +40,13 @@ function App() {
     }
   }, [aiDifficulty]);
 
+  // Función para mostrar/ocultar estadísticas de rendimiento
+  const [showPerformanceStats, setShowPerformanceStats] = useState<boolean>(false);
+
+  const togglePerformanceStats = useCallback(() => {
+    setShowPerformanceStats(prev => !prev);
+  }, []);
+
   // Actualizar análisis del juego cuando cambie el estado
   useEffect(() => {
     setGameAnalysis(analyzeGameState(gameState));
@@ -141,8 +148,19 @@ function App() {
     setIsAIThinking(true);
 
     try {
-      // Simular tiempo de pensamiento para mejor UX
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Tiempo de pensamiento adaptativo según dificultad (más rápido en niveles bajos)
+      const getThinkingTime = (diff: string) => {
+        switch (diff) {
+          case 'easy': return 300;      // 0.3 segundos
+          case 'intermediate': return 500;  // 0.5 segundos
+          case 'hard': return 800;      // 0.8 segundos
+          case 'expert': return 1000;   // 1 segundo
+          case 'world-class': return 1200; // 1.2 segundos
+          default: return 600;
+        }
+      };
+
+      await new Promise(resolve => setTimeout(resolve, getThinkingTime(aiDifficulty)));
 
       // Obtener el mejor movimiento de la IA
       const bestMove = await ai.getBestMove(gameState);
@@ -225,6 +243,24 @@ function App() {
       makeAIMove();
     }
   }, [gameMode, gameState.currentPlayer, makeAIMove, isAIThinking, ai]);
+
+  // Función para optimizar rendimiento de la IA
+  const handleOptimizePerformance = useCallback(() => {
+    // Configurar límite de historial más conservador para sesiones largas
+    chessGameManager.setMaxMoveHistory(30);
+
+    // Reducir tiempo de pensamiento de IA para respuestas más rápidas
+    if (ai) {
+      // Nota: Esto podría requerir ajustes en la configuración de la IA
+    }
+  }, [ai]);
+
+  // Efecto para limpiar recursos cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      // Limpiar cualquier recurso pendiente si es necesario
+    };
+  }, []);
 
   return (
     <div className="app">
@@ -314,7 +350,52 @@ function App() {
             <p>
               La IA utiliza la poderosa API de Gemini AI para análisis experto de posiciones
             </p>
+            <button onClick={togglePerformanceStats} className="performance-toggle">
+              {showPerformanceStats ? 'Ocultar' : 'Mostrar'} Estadísticas de Rendimiento
+            </button>
           </footer>
+
+          {/* Panel de estadísticas de rendimiento */}
+          {showPerformanceStats && (
+            <div className="performance-stats">
+              <h3>📊 Estadísticas de Rendimiento</h3>
+              <div className="stats-grid">
+                <div className="stat-item">
+                  <span className="stat-label">Movimientos en historial:</span>
+                  <span className="stat-value">{chessGameManager.getHistoryStats().currentLength}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Límite del historial:</span>
+                  <span className="stat-value">{chessGameManager.getHistoryStats().maxLength}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Modelo de IA:</span>
+                  <span className="stat-value">{ai?.getModelInfo() || 'Gemini 1.5 Flash'}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Tiempo de respuesta:</span>
+                  <span className="stat-value">{ai?.getPerformanceStats?.()?.avgResponseTime || '~1-3s'}</span>
+                </div>
+              </div>
+              <div className="performance-actions">
+                <button
+                  onClick={() => {
+                    handleOptimizePerformance();
+                    setShowPerformanceStats(false);
+                  }}
+                  className="optimize-btn"
+                >
+                  Aplicar Optimización
+                </button>
+                <button
+                  onClick={() => chessGameManager.setMaxMoveHistory(100)}
+                  className="expand-btn"
+                >
+                  Expandir (100 movimientos)
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

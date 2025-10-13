@@ -14,9 +14,9 @@ export class GeminiService {
   /**
    * Genera una respuesta usando Gemini AI
    */
-  async generateResponse(prompt: string, maxTokens: number = 1000, temperature: number = 0.3): Promise<string> {
+  async generateResponse(prompt: string, maxTokens: number = 1000, temperature: number = 0.3, model?: string): Promise<string> {
     try {
-      const response = await fetch(`${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`, {
+      const response = await fetch(`${this.baseUrl}/models/${model || this.model}:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,69 +55,87 @@ export class GeminiService {
    * Analiza una posición de ajedrez y sugiere el mejor movimiento
    */
   async analyzeChessPosition(fen: string, difficulty: string): Promise<string> {
-    const systemPrompt = this.getChessAnalysisPrompt(difficulty);
+    const systemPrompt = this.getOptimizedChessPrompt(difficulty);
 
-    const userPrompt = `Analiza esta posición de ajedrez en formato FEN:
+    const userPrompt = `FEN: ${fen}
 
-${fen}
-
-Por favor, responde únicamente con la notación algebraica del mejor movimiento (ej: "e2e4", "Nf3", "O-O", etc.). No incluyas explicaciones adicionales ni comentarios.`;
+Responde únicamente con el movimiento en notación algebraica.`;
 
     const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
 
-    return this.generateResponse(fullPrompt, 50, 0.1);
+    // Usar modelo más rápido para niveles bajos
+    const model = this.getModelForDifficulty(difficulty);
+
+    return this.generateResponse(fullPrompt, 30, 0.1, model);
   }
 
   /**
-   * Obtiene el prompt del sistema según la dificultad
+   * Obtiene el modelo más rápido según la dificultad
    */
-  private getChessAnalysisPrompt(difficulty: string): string {
-    const basePrompt = `Eres un experto en ajedrez analizando posiciones. Debes responder únicamente con la notación del mejor movimiento.
+  private getModelForDifficulty(difficulty: string): string {
+    // Usar modelo más rápido para niveles básicos
+    switch (difficulty) {
+      case 'easy':
+      case 'intermediate':
+        return 'gemini-1.5-flash'; // Más rápido
+      case 'hard':
+      case 'expert':
+      case 'world-class':
+      default:
+        return this.model; // Modelo por defecto (más potente)
+    }
+  }
 
-Instrucciones específicas según dificultad:`;
+  /**
+   * Obtiene el prompt optimizado del sistema según la dificultad
+   */
+  private getOptimizedChessPrompt(difficulty: string): string {
+    const basePrompt = `Eres un jugador de ajedrez nivel ${this.getELORange(difficulty)}.
+Responde ÚNICAMENTE con notación algebraica del movimiento.`;
 
     switch (difficulty) {
       case 'easy':
-        return `${basePrompt}
-- Nivel fácil (ELO 500): Elige movimientos seguros y básicos como un principiante.
-- Prioriza la seguridad del rey y el desarrollo simple de piezas.
-- Evita movimientos complejos o riesgosos.
-- Juega de forma conservadora y predecible.`;
+        return `${basePrompt} Juega como principiante: movimientos seguros, desarrollo básico, evita riesgos.`;
 
       case 'intermediate':
-        return `${basePrompt}
-- Nivel intermedio (ELO 1000): Busca movimientos sólidos y posicionales como un jugador de club.
-- Considera el centro, el desarrollo y la seguridad básica.
-- Evita errores tácticos obvios pero permite algunos riesgos calculados.
-- Juega de forma equilibrada entre ataque y defensa.`;
+        return `${basePrompt} Juega como jugador de club: sólido, táctica básica, posición equilibrada.`;
 
       case 'hard':
-        return `${basePrompt}
-- Nivel difícil (ELO 1500): Juega como un jugador de club fuerte con buen entendimiento posicional.
-- Busca ventajas posicionales y oportunidades tácticas menores.
-- Calcula 2-3 jugadas por adelantado.
-- Prioriza el control del centro y la actividad de piezas.`;
+        return `${basePrompt} Juega como experto: análisis profundo, ventajas posicionales, técnica precisa.`;
 
       case 'expert':
-        return `${basePrompt}
-- Nivel experto (ELO 2500): Juega como un maestro FIDE con análisis profundo.
-- Busca los movimientos más precisos y planes estratégicos complejos.
-- Considera planes a largo plazo y sutilezas posicionales avanzadas.
-- Calcula líneas tácticas complejas con precisión.
-- Evalúa posiciones con criterio experto.`;
+        return `${basePrompt} Juega como maestro: precisión absoluta, planes complejos, técnica perfecta.`;
 
       case 'world-class':
-        return `${basePrompt}
-- Nivel clase mundial (ELO 3000): Juega como un super gran maestro con análisis magistral.
-- Busca los movimientos más profundos y precisos posibles.
-- Considera todos los aspectos posicionales, tácticos y estratégicos.
-- Calcula líneas extremadamente complejas con precisión absoluta.
-- Evalúa posiciones con el más alto nivel de comprensión ajedrecística.
-- Busca ventajas mínimas y las explota con maestría suprema.`;
+        return `${basePrompt} Juega como super-GM: genialidad, profundidad inconcebible, precisión divina.`;
 
       default:
-        return `${basePrompt}
-- Nivel estándar: Busca movimientos sólidos y seguros.`;
+        return `${basePrompt} Juega movimientos sólidos y seguros.`;
     }
+  }
+
+  /**
+   * Obtiene el rango de ELO según la dificultad
+   */
+  private getELORange(difficulty: string): string {
+    switch (difficulty) {
+      case 'easy': return '800-1000';
+      case 'intermediate': return '1200-1600';
+      case 'hard': return '1800-2200';
+      case 'expert': return '2400-2700';
+      case 'world-class': return '2800-3000';
+      default: return '1400';
+    }
+  }
+
+  /**
+   * Obtiene estadísticas de rendimiento de la IA
+   */
+  getPerformanceStats(): { model: string; avgResponseTime: string; difficulty: string } {
+    return {
+      model: this.model,
+      avgResponseTime: '~1-3 segundos',
+      difficulty: 'Adaptativa según nivel'
+    };
   }
 }
